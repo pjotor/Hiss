@@ -1,0 +1,74 @@
+#ghostContainer , body { background-position:fixed ; }
++html * , div{zoom:1;}
+/*******************************/
+/************ WIDTH ************/
+/*******************************/
+.edit {_width:628px; }
+.w1, .w12, .w13, .w23, .w14, .w34 , .w15 , .w25 , .w35 , .w45 , .w16 , .w56 {_padding-right:3px;_padding-left:3px}
+.w1 {min-width: 98%;}
+    .w12 {width:47%;min-width: 47%};
+		/*****thirds ******/
+		.w13 {width:30%;min-width: 30%}
+		.w23 {width:64%;min-width: 64%}
+		/*****quarters ******/
+		.w14 {width:22%;min-width: 22%}
+		.w34 {width:73%;min-width: 73%;_width:72%;}
+		
+		/*****Fifths ******/
+		.w15 {width:18%;_width:17%;min-width: 18%}
+		.w25 {width:37%;_width:37%;min-width: 37%}
+		.w35 {width:58%;min-width: 58%}
+		.w45 {width:78%;min-width: 78%}
+		
+		/*****sixths ******/
+		.w16 {width:16%;min-width: 16%}
+		.w56 {width:79%;min-width: 79%}
+
+/* fix of img in link */
+a img {vertical-align:bottom;}
+
+body {_background-position: fixed;}
+
+/*******************************/
+/************ LISTS ************/
+/*******************************/
+.verticalList li, .verticalList , .popupList li, .popupList, .subMenu {height:auto !important;}
+/* start commented backslash hack \*/
+	* html .clearfix , ol, ul, li, div , .block , .borderedBlock {height:auto;_height:1%;} 
+	.clearfix, .verticalList, .verticalList li, .fakeHoverList li, .hoverList li a, .timeList li a, .coments .comment, .clearfix {height:1%;}
+	.clearfix , .block {display:block;}
+	.popupList li a {display:block;height:100%; text-align:left;}
+	/* close commented backslash hack */
+	.verticalList li {clear:both;}
+	
+	ul.horizontalList li , ol.horizontalList li {display:block !important;  float:left;text-align:center;/*width:80px;*/}
+	ul.horizontalList li {display:inline !important;height:auto;_height:1%}
+	
+	ul.pagination li {margin-right:5px;padding-top:3px;line-height:23px;clear:none;}
+	.fixed .menu a.selected, .fixed .menuPacked a.selected {height:1%}
+	.hoverList a .pull , .fakeHoverList .pull {position:relative;margin-right:-5px;display:block}
+		.fakeHoverList a:hover {cursor: pointer !important;}
+	.scroll {position:relative;}
+	.fakeHoverList {overflow:hidden !important;zoom:1 !important}
+	.fakeHoverList li {_border:1px solid #e7e7e7 !important;overflow:hidden !important;}
+		.fakeHoverList li .pull {_zoom:1 !important;}
+/*******************************/
+/************ BLOCS ************/
+/*******************************/
+.pullLeft , .pullRight , .pullUp , .pullDown, .selected {position:relative;}
+
+/*******************************/
+/************ FORMS ************/
+/*******************************/
+input {table-layout:fixed;}
+.hover a {display:inline-block !important;}
+
+.fixed { /* only ie6 : hack position fixe */
+	_position:absolute !important;/*
+}
+
+.siteWidth{width: expression(this.width > 980 ? 980: true);}
+
++html .wAuto {width:auto;}
+.darkButton, a.darkButton {color:white !important}
+.darkButton:hover,.darkButton:focus,a.darkButton:hover,a.darkButton:focus {color:black;}

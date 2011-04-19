@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset=utf-8 />
+	<title></title>
+<!--
+    <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> 
+    <link rel="stylesheet" type="text/css" media="screen" href="css/magic.default.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="css/magic.ie.css" />
+//-->    
+	<style type="text/css">
+		@font-face { font-family: Stencilia; src: url('typefaces/Stencilia-A.ttf'); } 
+		@font-face { font-family: Andale; src: url('typefaces/Andale Mono.ttf'); } 
+		
+		* {
+			margin: 0;
+			padding: 0;
+		}
+		
+		html, body {
+			height: 100%;
+			width: 100%;	
+			overflow: hidden; 
+			background: #000;
+            font-size: 90%;
+		}
+			
+		#container {
+			position: absolute;
+			top: 0; 
+			left: 0;
+            background: url(img/bg.jpg) no-repeat;
+            background-size: 100% 100%;
+            opacity: 0;
+		}
+		
+        .transform {
+            position: absolute;    
+        }
+        
+        .panel { display: none; } 
+		
+		.page {
+            position: absolute;
+			border: 5px dashed rgba(0,0,0,1); 
+			margin: 15px;
+			font-family: Andale, monotype;
+			font-size: 1.3em;
+			color: #000;
+            background: transparent;
+		}
+		
+		span.head {
+            position: absolute;
+			font-family: Stencilia, sans-serif;
+			font-size: 6em;	
+			color: #FFF;
+			background: #F3C;
+			padding: .2em;
+			white-space: nowrap;
+		}
+		
+		span.sub {
+            position: absolute;
+			font-family: Andale, monotype;
+			font-size: 2em;	
+			color: #fff;
+			background: #000;
+			padding: .1em;
+			white-space: nowrap;
+		}
+		
+        .page p {
+            background: rgba(255,255,255,.5);    
+            color: #000;
+            padding: 1em;
+        }
+        
+        /* CSS arrows */
+        .arrow {
+            position: relative;
+            top: 80px;
+            width: 160px;
+            height: 30px;
+            background: black;
+            box-shadow: 0 0 5px rgba(0,0,0,.5);
+            margin: 0 30px 160px 30px;        
+        }
+        
+        .arrow:before {
+            position: absolute;
+            content: "";
+            height: 80px;
+            width: 40px;
+            top: -65px;
+            left: 100px;
+            background: black;
+            -webkit-transform: skewX(45deg);
+               -moz-transform: skewX(45deg);
+                -ms-transform: skewX(45deg);
+                 -o-transform: skewX(45deg);
+                    transform: skewX(45deg);    
+            box-shadow: 0 0 5px rgba(0,0,0,.5);    
+        }
+        
+        .arrow:after {
+            position: absolute;
+            content: "";
+            height: 80px;
+            width: 40px;
+            top: 15px;
+            left: 100px;
+            background: black;
+            -webkit-transform: skewX(-45deg);
+               -moz-transform: skewX(-45deg);
+                -ms-transform: skewX(-45deg);
+                 -o-transform: skewX(-45deg);
+                    transform: skewX(-45deg); 
+            box-shadow: 0 0 5px rgba(0,0,0,.5);    
+        }
+        
+        .arrow.w {
+            -webkit-transform: rotate(-180deg);
+               -moz-transform: rotate(-180deg);
+                -ms-transform: rotate(-180deg);
+                 -o-transform: rotate(-180deg);
+                    transform: rotate(-180deg);            
+        }
+        
+        .arrow.s {
+            -webkit-transform: rotate(90deg);
+               -moz-transform: rotate(90deg);
+                -ms-transform: rotate(90deg);
+                 -o-transform: rotate(90deg);
+                    transform: rotate(90deg);            
+        }
+        
+        .arrow.n {
+            -webkit-transform: rotate(-90deg);
+               -moz-transform: rotate(-90deg);
+                -ms-transform: rotate(-90deg);
+                 -o-transform: rotate(-90deg);
+                    transform: rotate(-90deg);            
+        }
+        
+        .arrow.nw {
+            -webkit-transform: rotate(-135deg);
+               -moz-transform: rotate(-135deg);
+                -ms-transform: rotate(-135deg);
+                 -o-transform: rotate(-135deg);
+                    transform: rotate(-135deg);
+        }
+        
+        .arrow.ne {
+            -webkit-transform: rotate(-45deg);
+               -moz-transform: rotate(-45deg);
+                -ms-transform: rotate(-45deg);
+                 -o-transform: rotate(-45deg);
+                    transform: rotate(-45deg);            
+        }
+        
+        .arrow.se {
+            -webkit-transform: rotate(45deg);
+               -moz-transform: rotate(45deg);
+                -ms-transform: rotate(45deg);
+                 -o-transform: rotate(45deg);
+                    transform: rotate(45deg);            
+        }
+        
+        .arrow.sw {
+            -webkit-transform: rotate(135deg);
+               -moz-transform: rotate(135deg);
+                -ms-transform: rotate(135deg);
+                 -o-transform: rotate(135deg);
+                    transform: rotate(135deg);            
+        }
+        
+        
+	</style>
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+	<script type="text/javascript" src="lib/lettering.js"></script>
+	<script type="text/javascript" src="lib/transform.js"></script>
+	<script type="text/javascript" src="lib/scrollTo.js"></script>
+<!--
+    <script type="text/javascript" src="lib/hoverIntent.js"></script>
+    <script type="text/javascript" src="lib/resize.js"></script>
+    <script type="text/javascript" src="lib/magic.js" ></script>
+//-->
+	<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	
+	<script type="text/javascript">
+        String.prototype.reverse=function(){return this.split("").reverse().join(""); }
+
+        $(document).ready(function(){
+            var container = $("#container"); var wdw = $(window);
+            var min = Math.min.apply( Math, [wdw.height(), wdw.width()] ) - 50;
+            var max = Math.max.apply( Math, [wdw.height(), wdw.width()] );
+			var win = 	{ height: wdw.height(), width: wdw.width() }
+			var bg = 	{ height: container.height(), width: container.width() }
+            var pagesOri = [0,0,1,1,0,1,1,0,0,0,0];
+    		var page, top = 0, left = 0, alignment;
+            var pageCount = $("section.page").length;
+            
+            // Slightly rotates the element with an animation.
+            $.fn.nudge = function(n) {
+                n = n || 5;
+                return $(this).each(function() {
+                    $(this).css({  transform: "rotate(" + ((Math.random() * n) - (n/2)) + "deg)" });
+                })
+            }
+
+            var ori =   [   
+                {   height: min, //win.height, 
+                    width: min //win.width 
+                }, 
+                { 
+                    height: min, //win.width, 
+                    width: min //win.height 
+                }
+            ];
+
+			var pages = { 
+				height: 3, //Math.floor( bg.height / win.height ), 
+				width: 3 //Math.floor( bg.width / win.width )
+			}
+            
+            pages.canvas = {
+        		height: max, //bg.height * 
+				width:  max //bg.width  *
+            }
+
+            pages.port = {
+                top:    (pages.canvas.height / 2) - (win.height / 2),
+                left:   (pages.canvas.width / 2)  - (win.width / 2)
+            }
+            pages.offset = {
+                top:    (pages.canvas.height / 2) - (min / 2),
+                left:   (pages.canvas.width / 2)  - (min / 2)
+            }
+
+            var pageRot = [0,0,-90,-90,-180,-180,-270,-270,-270,-270];
+            var alignments = [
+                {"top": 0, "left": 0},  // 0
+                {"top": 2, "left": 0},  // 1
+                {"top": 2, "left": 2},  // 2
+                {"top": 0, "left": 2},  // 3
+                {"top":-2, "left": 2},  // 4 
+                {"top":-2, "left": 0},  // 5 
+                {"top":-2, "left":-2},  // 6
+                {"top": 0, "left":-2},  // 7 
+                {"top": 2, "left":-2},  // 8
+                {"top": 4, "left":-2}   // 9                
+            ];
+            
+			for( var i = 0; i < pageCount; i++ ) {
+				page = $(".page.slide" + i);
+                page.attr("id", "page" + i);
+				page.css(ori[pagesOri[i]]);
+                page.css({ 
+                    marginTop: (win.height - min) / 4, 
+                    marginLeft: (win.width - min) / 2, 
+                    transform: "rotate(" + pageRot[i] + "deg)"
+                });
+                
+                alignment = alignments[i];
+                if( i > 0 ) {
+                    for(key in alignment) {
+                        alignment[key] = ( key === "top" ) ?
+                            ($("#page" + (i-1)).height() * alignment[key] ):
+                            ($("#page" + (i-1)).width()  * alignment[key] );
+                    }
+                }
+                page.css(alignment);
+			}
+            
+            $(".transform").css({
+                top: ($("#page6").position().top * -1) + max, 
+                left: ($("#page6").position().left * -1) + max, 
+                margin: "0 " + (min*2) + "px " + (min*2) + "px 0"
+            });
+
+            $("span.head, span.sub").nudge(10);    
+
+            $(".arrow").click(function(){
+                var i = parseInt( $(this).parent().attr("id").reverse() ).toString().reverse();
+                var next =  $("#page" + ++i);
+                if( !next.length ) next = $("#page0"); 
+                
+                var rot = next.data("rotate");
+                
+                if( !isNaN(rot) ) {
+                    var tPos = next.position();
+                    var txty = [ tPos.top + (next.height() / 2), tPos.left + (next.width() / 2)];
+
+                    if( rot != $(".transform").data("rot") ) {
+                        $(".transform").css({ transform: "translate(" + txty.join() + ")"});
+                        $(".transform").animate({ transform: "rotate(" + rot + "deg)" }, 800, function(){
+                            $(document).scrollTo(next, 500, { margin: true });
+                        });
+                    } else {
+                        $(document).scrollTo(next, 500, { margin: true });
+                    }
+                    $(".transform").data("rot", rot);
+                } else {
+                    $(document).scrollTo(next, 500, { margin: true });
+                }
+            });
+
+            $("#container").animate({ 
+                height: $(document).height() + min, 
+                width: $(document).width() + min, 
+                opacity: 1 }, 1000, 
+                function(){
+                    $(document).scrollTo($("#page0"), 500, { margin: true });    
+                });
+
+		});
+
+	</script>
+    <style type="text/css">
+        ul li {
+            list-style: none;    
+        }
+    
+        .slide0 .head {
+            top: 15%; left: 5%;
+            font-size: 6em;
+        }    
+        .slide0 .sub {
+            top: 35%; left: 5%;
+        }
+        .slide0 .arrow {
+            position: absolute;
+            right: 25%;
+            top: 45%;
+        }
+
+    </style>    
+</head>
+<body>
+<div id="container">
+	<header></header>
+    
+    <div class="transform">
+    	<section class="page slide0" data-rotate="0"> 
+            <div class="arrow s"></div>
+            <span class="head">Åka Hiss</span> 
+            <span class="sub">Ett scenario av Tore Olbert</span>
+        </section>
+        
+        <section class="page slide1" data-rotate="0"> 
+            <div class="arrow e"></div>        
+            <span class="sub">Om Åka hiss</span>
+            <p>
+            Åka hiss är ett rollspel om konflikter. Det hanterar konflikträdsla, 
+            passiv och aktiv aggression samt de sociala regler och dogmer vi skapar 
+            åt oss själva och andra – på gott och ont. Men även, förhoppningsvis, 
+            kommunikation och resolution.
+            </p>
+            
+            <span class="sub">Varför jag skrivit detta</span>
+             <p>
+             Inspirationen till detta lajv kommer från ett kollektiv där jag för 
+             många år sedan där vi istället för att prata och hantera de små dumheter 
+             som händer i vardagen bara fortsatte att bli surare och surare på varandra 
+             istället. Det är ganska dumt att göra så i verkligheten, men konflikter 
+             kan bli spännande lajv. Jag ville även experimentera med hur dramatik 
+             och story fungerar i ett begränsat fysiskt rum.
+             </p>
+        </section>
+        
+        <section class="page slide2" data-rotate="90"> 
+            <div class="arrow e"></div>
+            <span class="head">Sammanfattning</span> 
+            <p>
+            Åka hiss handlar om ett mindre antal kollegor som länge har grämt sig 
+            på varandra. Istället för att ta tag i vardagens ofrånkomliga små konflikter 
+            när de var hanterbara så valde de istället att sopa dem under mattan 
+            med rationaliseringen ”det är enklare att hålla käft, vi måste ju jobba 
+            ihop imorgon med”.  Men på väg hem en fredag kväll fastnar de i hissen 
+            och kan inte längre komma undan…
+            </p>
+            
+            <p>
+            <strong>Spelare:</strong> Sex.
+            <strong>Spelledare:</strong> ca. En
+            <strong>Speltid:</strong> 1-2h Förberedelser, 3h Spel.
+            </p>
+        </section>
+        
+        <section class="page slide3" data-rotate="90"> 
+            <div class="arrow e"></div>        
+            <span class="head">Förberedelser</span> 
+            <span class="sub">(ca 1-2h)</span> 
+            <ul>
+                <li>
+                1. Alla spelare läser igenom hela scenariotexten och alla rollerna.
+                </li>
+                <li>
+                2. Spelarna kommer överens om ett namn på företaget de jobbar 
+                på samt vad företaget håller på med.
+                </li>
+                <li>
+                3. Välj eller bli tilldelad en roll. Spelarna väljer förnamn 
+                på sin roll samt arbetstitel och de arbetsuppgifter karaktären 
+                har på kontoret.
+                </li>
+                <li>
+                4. Varje spelare hittar på en konflikt mellan sin egen karaktär 
+                och en eller fler av de andra karaktärerna
+                </li>
+                <li>
+                5. Varje spelare bestämmer vilken relation de har till de andra 
+                karaktärerna
+                </li>
+                <li>
+                6. Spelarna presentera sedan en i taget sina roller, konflikter 
+                och relationer för varandra med sina egna ord.
+                </li>
+            </ul>
+        </section>
+        
+        <section class="page slide4" data-rotate="180"> 
+            <div class="arrow e"></div>        
+            <span class="head">Företaget</span> 
+            <p>
+            Företaget kan vara ett verkligt företag eller påhittat. Bäst resultat kommer 
+            dock från ett företag som är ganska stort och där deltagarnas kontor eller 
+            avdelning bara är en bit av en större helhet. Ett stort och själlöst företag 
+            ger bra möjligheter för karaktärerna att skylla på “huvudkontoret”, 
+            “utländska investerare” och annat som kan fostra konflikter. Att bara vara 
+            ett oviktigt kugghjul i maskineriet kommer även att hjälpa till att skapa 
+            och fostra känslan av frustration och irritation.
+            </p>
+            <p>
+            Inforuta vid sidan: Mindre och gemytligare företag skulle troligtvis inte 
+            kunna ha den företagskulturen som scenariot anspelar på utan att ha kollapsat 
+            för länge sedan. Det kan möjligtvis vara en utmaning för spelare som vill 
+            ha ännu mer intimitet i sina konflikter, men det kan vara svårt att hålla 
+            den inre logiken trovärdig och brister den kan det bli dåligt spel. 
+            </p>
+            <p>
+            Efter ni har kommit överens om namnet på företaget så får ni komma överens 
+            om vad företaget håller på med i stort (bransch, produkt), samt vad er avdelning 
+            gör: Om ert företag tillverkar x, säljer x, säljer tjänsten x eller annat 
+            så skall ni sedan komma fram till vad er avdelnings roll i det hela är. 
+            Har ni hand om administrationen, ekonomin, försäljningen, marknadsföringen, 
+            it-supporten, något annat eller kanske en blandning av två eller fler funktioner?
+            </p>
+        </section>
+        
+        <section class="page slide5" data-rotate="180"> 
+            <div class="arrow e"></div>        
+            <span class="head">Roller</span> 
+            <p>
+            Rollutdelningen kan ske på olika sätt, om ni kan komma fram till det via 
+            konsensus så är det fantastiskt. Men då rollerna inte har något förutbestämt 
+            kön, då det är inte viktigt i detta scenario, så kan ni enkelt lotta ut dem. 
+            Skulle dock en spelare känna att den inte skulle kunna relatera till en 
+            specifik roll så låt den spelaren välja först och lotta sedan ut resten. 
+            Är det svårt att relatera till något så kan det vara tråkigt att spela, 
+            men man kan även välja att se det som en utmaning. Eftersom det finns med 
+            ett triangeldrama mellan de könslösa rollerna så kan det vara bra om du 
+            blir en av dem att fundera på om du som spelare föredrar att spela ditt 
+            eget kön och homo/hetero eller spela ett annat kön och homo/hetero. 
+            Spela på det du tycker passar dig bäst, vad du än är så kommer hissen 
+            att älska dig ändå.
+            </p>
+            <p>
+            Två av karaktärerna kommer att ha en “Reacher & settler” relation vilket 
+            kommer från en lite små fånig idé från TV serien How I met your mother. 
+            Hypotesen bakom det säger att i alla par så finns det en person som går 
+            över sin “snygghetsgräns” och blir ihop med en partner som är “snyggare” 
+            än den andre - vilket gör att reachern ofta ligger i för att hålla 
+            igång intresset. Den andra sidan av myntet är “settlern” som går under 
+            sin “snygghetsgräns” i sitt partner val och då inte upplever ett så stort 
+            behov att underhålla förhållandet utan kan luta sig tillbaka (fysiskt 
+            eller psykiskt) och inte känna så många krav. Snygghet är dock subjektivt; 
+            skönhet som koncept är inte intressant för detta spelet, dock är konflikten 
+            med maktförskjutning när personer drar olika mycket i ett förhållande 
+            intressant varpå detta är med i scenariot.
+            </p>
+        </section>
+        
+        <section class="page slide6" data-rotate="270"> 
+            <div class="arrow e"></div>        
+            <span class="head">Scenariot</span> 
+            <p>
+            Scenariot handlar om ett antal kollegor som har jobbat tillsammans på samma 
+            kontor under flera år. Under denna tid så har de uppstått en mängd vanliga 
+            vardagsproblem som mobbning, knuffande, ”din mamma jobbar inte här” och 
+            annat som gjort att de sårat varandra – både med eller utan avsikten att 
+            vara elak. Alla karaktärer har ett mått av konflikträdsla så istället för 
+            att konfrontera vardagens små problem när de är triviala så väljer de att 
+            ignorera, förtränga och sopa dem under mattan. Trots att de på ett 
+            intellektuellt plan försöker intala sig själva att de är oberörda så håller 
+            inte deras känslor med om det. Med åren har de blivit mer och mer 
+            snarstuckna mot varandra, prestige blir viktigare och viktigare. 
+            De pinkar revir och är småsinta om minsta lilla sak...
+            </p>
+            <p>
+            Denna fredag så avslutar de en extra lång och jobbig vecka med ännu ett 
+            av chefens hatade teambuilding initiativ. Även fast ingen har vågat säga 
+            det till honom så måste väll chefen ändå fatta att alla kommer hata honom 
+            om han har ett stående obligatoriskt möte på obetalad övertid en fredag kväll?
+            </p>
+            <p>
+            När mötet äntligen är över så försöker alla skynda till hissen på subtilt 
+            sett som möjligt. Alla vill därifrån men ingen vill verka för ivrig, 
+            det är ju trots allt lite prestige i att vara kvar sist. Men denna gång 
+            kommer de alla iväg med samma hiss.
+            Efter några våningar så stannar hissen abrupt. De får inte upp dörren, 
+            mobilerna har ingen täckning i hisschaktet och när ingen svarar i nödtelefonen 
+            går de sakta upp för dem att de kan vara instängda ända tills på måndag.
+            </p>
+        </section>
+        
+        <section class="page slide7" data-rotate="270"> 
+            <div class="arrow e"></div>        
+            <span class="head">Innan hissen</span> 
+            <p>
+            Varje spelare spelar ut en tidsresa och en monolog som är grunden till deras 
+            förskrivna konflikter. Scenerna spelas upp i en av de upp-tejpade hissarna 
+            och håller på så länge som ingen av de som är med i scenen går utanför gränsen. 
+            Så fort som någon går utanför tejpen är scenen över.
+            </p>
+            
+            <span class="sub">Tidsresor:</span>
+            <ul>
+                <li>
+                    <span class="head">Olsson & Af Lilja</span>
+                    <span class="sub">Bråk om löneförhöjning</span>
+                    Af lilja vill ha 4000 kr mer i lön, Olsson tycker att det är långt ifrån förkänt 
+                    och tar ut hela veckans samlade aggressioner på Af Lilja.
+                </li>
+                <li>
+                    <span class="head">Svensson & Nyqvist</span>
+                    <span class="sub">Bråk om förhållande</span>
+                    Svensson vill berätta för alla kolegor att de är ihop och sluta leva dubbelliv. 
+                    Nyqvist tycker att det skulle bara leda till problem och vara jättejobbigt på jobbet.
+                </li>
+                <li>
+                    <span class="head">Björk & Stein</span>
+                    <span class="sub">Bråk om diskmaskinen och “Din mamma jobbar inte här” lappen.</span> 
+                    Detta spelas ut i två omgångar men ett vanligt scenbrott mellan del 1 och del 2.
+                    Del 1 Stein ser björk ställa kaffekoppen i vasken istället för i diskmaskinen.
+                    Del 2 Björk ser Stein sätta upp en “Din mamma jobbar inte här” lapp och tar et personligt.
+                </li>
+            </ul>
+    
+            <span class="sub">Monologer:</span>
+            <ul>
+                <li>
+                    <span class="head">Alla</span>
+                    <span class="sub">Tankar kring chefens teambuilding.</span>
+                    Varje spelare utom chefen har en monolog i taget om vad deras karaktär tycker 
+                    om chefens teambuilding. När alla de spelarna är klara så har chefen en monolog 
+                    om hur det är att vara chef och varför denna har teambuildingen.
+                </li>
+            </ul>
+        </section>
+        
+        <section class="page slide8" data-rotate="270">
+            <div class="arrow e"></div>
+            <span class="head">Scener</span>
+            <p>
+                <span class="sub">Scen E</span>
+                <strong>Stämning:</strong> Passiv-aggresivt. I denna scen håller karaktärerna 
+                fortfarande på sina inarbetade fasader och prestige.<br/>
+                <strong>Hiss:</strong> Mellanstorlek.<br/>
+                <strong>Fredag</strong><br/>
+                Spelarna börjar i hissen efter en onödigt lång arbetsdag. Hissen fastnar 
+                på vägen ner. Ingen vill vara där. Konflikterna bubblar under ytan men 
+                karaktärerna är fortfarande kvar i hur de beter sig på jobbet där prestige 
+                och att hålla uppe fasaden för synsskull är viktigt.
+            </p>
+            
+            <p>
+                <span class="sub">Scen 2</span>
+                <strong>Stämning:</strong> Aggresionerna under ytan kommer fram. 
+                Karaktärerna har nu varit instängda tillsammans så länge att fasaderna 
+                börjar spricka.<br/>
+                <strong>Hiss:</strong> Liten<br/>
+                <strong>Lördag</strong><br/>
+                Scenen börjar med att karaktärerna vaknar och spelledaren sätter en 
+                äggklocka/timer på ca 5 min och säger till spelarna att de inte får prata 
+                förens tiden gått ut.
+                När tiden är över så vet karaktärerna med sig att de kommer sitta här ett 
+                bra tag till. Efter att ha suttit instängda tillsammans än längre stund 
+                så orkar de flesta inte hålla på fasaderna så mycket längre och det 
+                jobbiga i situationen gör att allas stubiner är korta. När diplomatin 
+                har krackelerat så kommer det fram vad karaktärerna egentligen tycker 
+                om varandra.
+            </p>
+            
+            <p>
+                <span class="sub">Scen 3</span>
+                <strong>Stämning:</strong> Katharsis, upplyft eller uppgivet?<br/>
+                <strong>Hiss:</strong> Stor<br/>
+                <strong>Söndag</strong><br/> 
+                Karaktärerna försöker om de vill lösa sina konflikter. Vissa konflikter är enkla, 
+                andra svåra och för vissa är lösningen att det inte finns någon lösning 
+                (komma överens om att de inte kan komma överens, men kunna gå vidare). 
+            </p>
+            
+            <p>
+                <span class="sub">Eftersnack</span>
+                Eftersom detta scenario handlar om många och förhoppningsvis intensiva 
+                konflikter så är det rekommenderat att alla deltagare är med och pratar 
+                ut lite om spelet i efterhand. Speledaren ställer några inledande frågor 
+                och sedan är det öppet forum så länge som ni känner för det. 
+            </p>
+        </section>
+        
+        <section class="page slide9" data-rotate="270"> 
+            <div class="arrow nw"></div>        
+            <span class="head">Regler och speltekniker</span>
+            <ul>
+                <li>
+                    <span class="sub">Toalett</span>
+                    I vanliga fall så skulle toabesök vara ett problem om flera personer sitter 
+                    fast i en hiss i flera dagar. Men det är inte intressant för scenariot eller 
+                    sanitärt att spela så karaktärerna får inte ta upp det i spelet.<br/> 
+                    Spelarna får dock gå på toa hur mycket de vill, men om möjligt gör det hellre 
+                    innan spelet än när spelet är igång.
+                </li>
+                <li>
+                    <span class="sub">Utbrytning</span>
+                    Karaktärerna får inte komma ur hissen förens scenariot är slut. 
+                    Alla karaktärer får göra hur många utbrytningsförsök de vill, 
+                    så länge de inte lyckas.<br/>
+                    Spelarna får dock gå off/lämna spelet och komma tillbaka när de behöver.
+                </li>
+                <li>
+                    <span class="sub">Konflikter</span>
+                    Innan spelet börjar finns det flera fördefinerade konflikter mellan karaktärerna 
+                    men om någon spelare vill så får de gärna friforma fram fler under brinnande spel. 
+                    Om någon spelare hittar på en konflkt mellan sin egen karaktär och en annan 
+                    karaktär så har händelsen hänt i in-game världen.<br/> 
+                    
+                    <strong>Exempelvis:</strong><br/>
+                    <em>Svensons skäller ut Björk för att han aldrig ställer sina kaffekoppar i maskinen 
+                    utan altid lämnar dem på diskbänken istället så att någon annan får ta hand om det. 
+                    Då kontrar Björk med “Ha, jag såg dig allt förra tisdagen, då kom du med ett 
+                    mindre berg koppar som du stälde på diskbänken!”.</em><br/>
+                    
+                    Då har den situationen faktiskt hänt i spelvärlden, men Svenson får självklart 
+                    ljuga, försvara, konfrontera eller urskulda sig bäst spelaren vill.<br/>
+                    Ta det inte som något negativt om någon kommer på något risigt förflutet åt 
+                    din karaktär, utan se det istället som en möjlighet att spela på.
+                    
+                    Det ända undantaget till konfliktregeln är om händelsen är för osanolik 
+                    (t.ex. dinosaurier i rymden) eller för tokrolig (t.ex. måla om kontoret 
+                    med fyrverkerier i en färgburk). Då är bara att säga<br/>
+                    <strong>“Nej nu talar du i nattmössan”</strong><br/>
+                    för att signalera till den andra spelaren att den gått över gränsen.
+                </li>
+                <li>
+                    <span class="sub">Tidsresor</span>
+                    Om spelarna vill spela upp en konflikt som hänt tidigare så kan de pausa 
+                    spelet och spela upp det som en flashback.<br/>
+                    
+                    <strong>Exempelvis</strong>:<br/>
+                    <em>Två eller fler spelare kommer överens om att de vill spela utpp en händelse 
+                    som är grunden till en konflikt. Exempelvis när en person tog den sita mjöken 
+                    och stälde det tomma paketet i kylen men blev påkommen. Då tar de spelarna 
+                    och går till den andra hissen och spelar upp den scenen, varpå lajvet i den 
+                    vanliga hissen pausar, när de är klara så går de tillbaka till de andra och 
+                    lajvet fortsätter.</em><br/>
+                    
+                    En tidsresa håller på så länge som alla parter i den håller sig inom tejpen.
+                </li>
+                <li>
+                    <span class="sub">Monologer</span>
+                    När en spelare vill så kan ställa sig utan för hissen och hålla en kort 
+                    monolog om vad deras karaktär tycker eller tänker. Det är friviligt och 
+                    de andra karaktärerna kommer inte att veta det men deras spelare kommer 
+                    kunna spela på det.<br/>
+                    
+                    Poängen med denna tekniken är att t.ex. om någon är tyst i ett lajv så kan 
+                    det vara svårt att veta varför vilket kan göra det svårt att spela mot det. 
+                    Är spelaren eller karaktären trött, uttråkad, ledsen, osäker eller spelar den tyst? 
+                    Men t.ex. om den tysta spelaren håller en monolog om varför så kan de andra 
+                    spelarnas karaktärer spela mot det på intressantare sätt.<br/>
+                    Om Björk är tyst för att karaktären är sur för att Nyqvist och Svensson 
+                    verkar gilla varandra och säger det i en monolog så kan de spelarna ta 
+                    till sig det och spela ut mer på det, kanske hålla hand eller liknande 
+                    för att provocera fram mer spel.
+                </li>
+            </ul>
+        </section>        
+    </div>
+
+    <footer></footer>
+</div>
+</body>
+</html>
