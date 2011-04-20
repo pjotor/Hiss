@@ -3,11 +3,7 @@
 <head>
 	<meta charset=utf-8 />
 	<title></title>
-<!--
-    <link rel="stylesheet" type="text/css" media="screen" href="css/master.css" /> 
-    <link rel="stylesheet" type="text/css" media="screen" href="css/magic.default.css" />
-    <link rel="stylesheet" type="text/css" media="screen" href="css/magic.ie.css" />
-//-->    
+ 
 	<style type="text/css">
 		@font-face { font-family: Stencilia; src: url('typefaces/Stencilia-A.ttf'); } 
 		@font-face { font-family: Andale; src: url('typefaces/Andale Mono.ttf'); } 
@@ -182,140 +178,154 @@
 	<script type="text/javascript" src="lib/lettering.js"></script>
 	<script type="text/javascript" src="lib/transform.js"></script>
 	<script type="text/javascript" src="lib/scrollTo.js"></script>
-<!--
-    <script type="text/javascript" src="lib/hoverIntent.js"></script>
-    <script type="text/javascript" src="lib/resize.js"></script>
-    <script type="text/javascript" src="lib/magic.js" ></script>
-//-->
 	<!--[if IE]>
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
 	
 	<script type="text/javascript">
         String.prototype.reverse=function(){return this.split("").reverse().join(""); }
-
         $(document).ready(function(){
-            var container = $("#container"); var wdw = $(window);
-            var min = Math.min.apply( Math, [wdw.height(), wdw.width()] ) - 50;
-            var max = Math.max.apply( Math, [wdw.height(), wdw.width()] );
-			var win = 	{ height: wdw.height(), width: wdw.width() }
-			var bg = 	{ height: container.height(), width: container.width() }
-            var pagesOri = [0,0,1,1,0,1,1,0,0,0,0];
-    		var page, top = 0, left = 0, alignment;
-            var pageCount = $("section.page").length;
-            
-            // Slightly rotates the element with an animation.
+        	var page, top = 0, left = 0, alignment, win = $(window); 
+            var container = $("#container"), transformer = $(".transform");
+            var min = Math.min.apply( Math, [win.height(), win.width()] ) - 50;
+            var max = Math.max.apply( Math, [win.height(), win.width()] );
+            var pageCount = $(".page").length;
+
+            var rotations = [ 0,0,-1,-1,-2,-2,-3,-3,-3,0,0,0,-1,-1,-1,-1,-2,-2 ];
+            var alignments = [
+            //Scenariot
+                {"top": 0, "left": 0},  // 0
+                {"top": 1, "left": 0},  // 1
+                {"top": 1, "left": 1},  // 2
+                {"top": 0, "left": 1},  // 3
+                {"top":-1, "left": 1},  // 4
+                {"top":-1, "left": 0},  // 5
+                {"top":-1, "left":-1},  // 6
+                {"top": 0, "left":-1},  // 7
+                {"top": 1, "left":-1},  // 8
+                {"top": 2, "left":-1},  // 9
+                {"top": 2, "left": 0},  // 10
+            //Roller
+                {"top": 2, "left": 1},  // 11
+            //Spelledaranvisning
+                {"top": 2, "left": 2},  // 12
+                {"top": 1, "left": 2},  // 13
+                {"top": 0, "left": 2},  // 14
+                {"top":-1, "left": 2},  // 15
+                {"top":-2, "left": 2},  // 16
+                {"top":-2, "left": 1},  // 17
+                {"top":-2, "left": 0},  // 18
+            //Extra
+                {"top":-2, "left":-1}   // 19
+            ];
+
+            /*
+            Functions
+             */
+            // Slightly rotate the element(s).
             $.fn.nudge = function(n) {
                 n = n || 5;
                 return $(this).each(function() {
-                    $(this).css({  transform: "rotate(" + ((Math.random() * n) - (n/2)) + "deg)" });
+                    $(this).css({  
+                        transform: "rotate(" + ((Math.random() * n) - (n/2)) + "deg)" 
+                    });
                 })
             }
 
-            var ori =   [   
-                {   height: min, //win.height, 
-                    width: min //win.width 
-                }, 
-                { 
-                    height: min, //win.width, 
-                    width: min //win.height 
-                }
-            ];
-
-			var pages = { 
-				height: 3, //Math.floor( bg.height / win.height ), 
-				width: 3 //Math.floor( bg.width / win.width )
-			}
-            
-            pages.canvas = {
-        		height: max, //bg.height * 
-				width:  max //bg.width  *
-            }
-
-            pages.port = {
-                top:    (pages.canvas.height / 2) - (win.height / 2),
-                left:   (pages.canvas.width / 2)  - (win.width / 2)
-            }
-            pages.offset = {
-                top:    (pages.canvas.height / 2) - (min / 2),
-                left:   (pages.canvas.width / 2)  - (min / 2)
-            }
-
-            var pageRot = [0,0,-90,-90,-180,-180,-270,-270,-270,-270];
-            var alignments = [
-                {"top": 0, "left": 0},  // 0
-                {"top": 2, "left": 0},  // 1
-                {"top": 2, "left": 2},  // 2
-                {"top": 0, "left": 2},  // 3
-                {"top":-2, "left": 2},  // 4 
-                {"top":-2, "left": 0},  // 5 
-                {"top":-2, "left":-2},  // 6
-                {"top": 0, "left":-2},  // 7 
-                {"top": 2, "left":-2},  // 8
-                {"top": 4, "left":-2}   // 9                
-            ];
-            
-			for( var i = 0; i < pageCount; i++ ) {
-				page = $(".page.slide" + i);
-                page.attr("id", "page" + i);
-				page.css(ori[pagesOri[i]]);
-                page.css({ 
-                    marginTop: (win.height - min) / 4, 
-                    marginLeft: (win.width - min) / 2, 
-                    transform: "rotate(" + pageRot[i] + "deg)"
+            // Get the corner page
+            var topLeft = function() {
+                var tmp = low = sum = 0; 
+                $.each(alignments, function(i,value) { 
+                    sum = 0;
+                    $.each(value, function(key,val) { 
+                        sum += val; 
+                        if(sum<tmp) { tmp = val; low = i; }
+                    });
                 });
+                return $("#page" + low);
+            }
+
+            // Shorthand for scrolling to a specific element
+            var scrollToPage = function(page) {
+                $(document).scrollTo(page, 500, { margin: true });
+            }
+
+            // Matches rotation and triggers the scrolling
+            var gotoPage = function(n) {
+                var dest =  $("#page" + n);
+                if( !dest.length ) dest = $("#page0"); 
                 
-                alignment = alignments[i];
-                if( i > 0 ) {
-                    for(key in alignment) {
-                        alignment[key] = ( key === "top" ) ?
-                            ($("#page" + (i-1)).height() * alignment[key] ):
-                            ($("#page" + (i-1)).width()  * alignment[key] );
+                var rotation = dest.data("rotate");
+                if( !isNaN(rotation) ) {
+                    if( rotation != transformer.data("rotate") ) {
+                        transformer.css({ 
+                            transform: "translate(" + 
+                                dest.position().top + (dest.height() / 2) + "," + 
+                                dest.position().left + (dest.width() / 2) + ")"
+                        });
+                        transformer.animate(
+                            { transform: "rotate(" + rotation + "deg)" }, 
+                            800, function(){ scrollToPage(dest);  }
+                        );
                     }
+                    transformer.data("rotate", rotation);
                 }
-                page.css(alignment);
-			}
+                scrollToPage(dest);
+            }
+
+            // Setup rotations (90deg steps)
+            $.each(rotations, function(i,value) {
+                rotations[i] = value * 90;
+            });
+
+            // Setup alignments (placement steps)
+            $.each(alignments, function(i,value) {
+                $.each(value, function(key,val) {
+                    alignments[i][key] = min * (val*2);
+                });
+            });
             
-            $(".transform").css({
-                top: ($("#page6").position().top * -1) + max, 
-                left: ($("#page6").position().left * -1) + max, 
+            // Setup all pages (rotations, placement and id)
+            $(".page").each(function(i){
+                $(this).attr("id", "page" + i);
+                $(this).data("rotate", rotations[i]);
+                $(this).css($.extend({ 
+                    height:     min, 
+                    width:      min, 
+                    marginTop:  (win.height() - min) / 4, 
+                    marginLeft: (win.width() - min) / 2, 
+                    transform:  "rotate(" + rotations[i] + "deg)"
+                }, alignments[i]));
+            });
+
+            // Setting dynamic styles
+            console.log(topLeft());
+            
+            transformer.css({
+                top: (topLeft().position().top * -1) + max, 
+                left: (topLeft().position().left * -1) + max, 
                 margin: "0 " + (min*2) + "px " + (min*2) + "px 0"
             });
 
-            $("span.head, span.sub").nudge(10);    
+            // Nudging all the headlines
+            $("span.head, span.sub").nudge(10);
 
+            // Interaction handlers
             $(".arrow").click(function(){
                 var i = parseInt( $(this).parent().attr("id").reverse() ).toString().reverse();
-                var next =  $("#page" + ++i);
-                if( !next.length ) next = $("#page0"); 
-                
-                var rot = next.data("rotate");
-                
-                if( !isNaN(rot) ) {
-                    var tPos = next.position();
-                    var txty = [ tPos.top + (next.height() / 2), tPos.left + (next.width() / 2)];
-
-                    if( rot != $(".transform").data("rot") ) {
-                        $(".transform").css({ transform: "translate(" + txty.join() + ")"});
-                        $(".transform").animate({ transform: "rotate(" + rot + "deg)" }, 800, function(){
-                            $(document).scrollTo(next, 500, { margin: true });
-                        });
-                    } else {
-                        $(document).scrollTo(next, 500, { margin: true });
-                    }
-                    $(".transform").data("rot", rot);
-                } else {
-                    $(document).scrollTo(next, 500, { margin: true });
-                }
+                gotoPage(++i);
             });
 
-            $("#container").animate({ 
-                height: $(document).height() + min, 
-                width: $(document).width() + min, 
-                opacity: 1 }, 1000, 
-                function(){
+            // Loading done animation and fadeIn
+            container.animate(
+                { 
+                    height: $(document).height() + min, 
+                    width:  $(document).width() + min, 
+                    opacity: 1 
+                }, 1000, function() {
                     $(document).scrollTo($("#page0"), 500, { margin: true });    
-                });
+                }
+            );
 
 		});
 
@@ -345,13 +355,13 @@
 	<header></header>
     
     <div class="transform">
-    	<section class="page slide0" data-rotate="0"> 
+    	<section class="page slide0"> 
             <div class="arrow s"></div>
             <span class="head">Åka Hiss</span> 
             <span class="sub">Ett scenario av Tore Olbert</span>
         </section>
         
-        <section class="page slide1" data-rotate="0"> 
+        <section class="page slide1"> 
             <div class="arrow e"></div>        
             <span class="sub">Om Åka hiss</span>
             <p>
@@ -372,7 +382,7 @@
              </p>
         </section>
         
-        <section class="page slide2" data-rotate="90"> 
+        <section class="page slide2"> 
             <div class="arrow e"></div>
             <span class="head">Sammanfattning</span> 
             <p>
@@ -391,7 +401,7 @@
             </p>
         </section>
         
-        <section class="page slide3" data-rotate="90"> 
+        <section class="page slide3"> 
             <div class="arrow e"></div>        
             <span class="head">Förberedelser</span> 
             <span class="sub">(ca 1-2h)</span> 
@@ -423,7 +433,7 @@
             </ul>
         </section>
         
-        <section class="page slide4" data-rotate="180"> 
+        <section class="page slide4"> 
             <div class="arrow e"></div>        
             <span class="head">Företaget</span> 
             <p>
@@ -452,7 +462,7 @@
             </p>
         </section>
         
-        <section class="page slide5" data-rotate="180"> 
+        <section class="page slide5"> 
             <div class="arrow e"></div>        
             <span class="head">Roller</span> 
             <p>
@@ -485,7 +495,7 @@
             </p>
         </section>
         
-        <section class="page slide6" data-rotate="270"> 
+        <section class="page slide6"> 
             <div class="arrow e"></div>        
             <span class="head">Scenariot</span> 
             <p>
@@ -518,7 +528,7 @@
             </p>
         </section>
         
-        <section class="page slide7" data-rotate="270"> 
+        <section class="page slide7"> 
             <div class="arrow e"></div>        
             <span class="head">Innan hissen</span> 
             <p>
@@ -563,8 +573,8 @@
             </ul>
         </section>
         
-        <section class="page slide8" data-rotate="270">
-            <div class="arrow e"></div>
+        <section class="page slide8">
+            <div class="arrow s"></div>
             <span class="head">Scener</span>
             <p>
                 <span class="sub">Scen E</span>
@@ -615,8 +625,8 @@
             </p>
         </section>
         
-        <section class="page slide9" data-rotate="270"> 
-            <div class="arrow nw"></div>        
+        <section class="page slide9"> 
+            <div class="arrow e"></div>        
             <span class="head">Regler och speltekniker</span>
             <ul>
                 <li>
@@ -691,7 +701,296 @@
                     för att provocera fram mer spel.
                 </li>
             </ul>
-        </section>        
+        </section>
+        
+        <section class="page slide10"> 
+            <div class="arrow e"></div>        
+            <span class="head">Tack till</span>
+            <ul>
+                <li>
+                    <span class="sub">Inspiratörer</span>
+                    Erik Pihl, Karolina Staël, Li Melus, Martin Jordö, Onni Qvickström, 
+                    Per Wetterstrand, Staffan Fladvad, Tobias Wrigstad.
+                </li>
+                <li>
+                    <span class="sub">Första Speltestare</span>
+                    Marcus Ekwall, Onni Qvickström, Tove Ekvall.
+                </li>
+                <li>
+                    <span class="sub">Spelare/speltestare första uppsättningen</span>
+                    Erik Pihl, Krister Svanlund, Marcus Brissman, Martin Jordö, 
+                    Olof Olsson, Ylva Hultén.
+                </li>
+                <li>
+                    <span class="sub">Grafik och layout</span>
+                    Andreas Sjöberg, Lina Bengtsson.
+                </li>                
+            </ul>
+        </section>
+        
+        <section class="page slide11"> 
+            <div class="arrow e"></div>        
+            <span class="head">Åka hiss</span>
+            <span class="sub">Spelledaranvisningar</span>
+        </section>
+
+        <section class="page slide12"> 
+            <div class="arrow e"></div>        
+            <span class="head">Första saker först</span>
+            <p>
+                Läs igenom allt material: Detta häfte, scenariot samt rollerna.
+            </p>
+            <span class="sub">Lokal</span>
+            <p>
+                Detta scenario kräver inte så mycket av lokalen. Det enda som 
+                behövs är en öppen golvyta som du kan tejpa upp två eller tre 
+                stycken fyrkanter i hissstorlek samt ha lite extra utrymme över 
+                runt om så det inte blir trångt.
+            </p>            
+        </section>
+
+        <section class="page slide13"> 
+            <div class="arrow e"></div>        
+            <span class="head">Cheklista</span>
+            <span class="sub">Material</span>
+            <ul>
+                <li>
+                    1. Flera rullar tejp som är lätt att ta bort/inte lämnar märken. Tex. maskeringstejp.
+                </li>
+                <li>
+                    2. En systemetpåse med ett sexpack öl, cider eller liknande. 
+                    Behöver inte vara alkoholhaltigt - men är det mogna spelare över 18 år 
+                    så varför inte! Dock viktigt att det är en burk/flaska per spelare.
+                </li>
+                <li>
+                    3. En glättig, monoton och instrumental hissmusik-låt 
+                    (tips: spotifya Klaus Wunderlich).
+                </li>
+                <li>
+                    4. Äggklocka eller något annat som låter kontinuerligt och som märks när 
+                    den stoppar/stoppas. Har du inte det så går det även med en timer i en mobil.
+                </li>
+            </ul>
+
+            <span class="sub">Setup</span>
+            <p>
+                Se till att alla deltagare läser igenom hela scenariot och alla roller. 
+                Ju färre hemligheter det är mellan spelarna desto mer har de att 
+                spela på med varandra. Det säger dock inte att alla karaktärer 
+                behöver eller skall veta allt.
+            </p>
+            <ul>
+                <li>
+                    1. Tejpa upp 3 hissar på golvet. En stor, en mellan och en liten. 
+                    Tanken här är att influera scen 3 så att den blir mer tryckt 
+                    och scen 4 så att den är mer öppenhjärtad.<br/>
+                    Alternativ hiss setup: Enbart en hiss. Flytta tejpbitarna innåt 
+                    några centemeter vardera varje kvart så att hissen blir synligt 
+                    mindre under spelets gång.
+                </li>
+                <li>
+                    3. Hjälp spelarna att komma igång med att brainstorma fram 
+                    sitt företags namn och bransch.
+                </li>
+                <li>
+                    4. Se till att varje spelare kommer på ett eget namn till sin 
+                    karaktär, arbetsroll och att de kortfattat presenterar sin roll 
+                    för varandra. Låt spelarna göra så mycket av detta som möjligt 
+                    själva, då kommer det vara enklare för dem att relatera till 
+                    det och ju mer de skapar själva desto större delaktighet kommer 
+                    de förhoppningsvis att känna.
+                </li>
+            </ul>       
+        </section>
+
+        <section class="page slide14"> 
+            <div class="arrow e"></div>        
+            <span class="head">Musik</span>
+            <p>
+                Presentera musiken med att “detta skall ni lyssna på i ca 3h på repeat, 
+                poängen med detta är för att det skall vara irriterande” och spela 
+                gärna upp en liten snutt. Var helt öppen med spelarna om att det 
+                är till för att irritera.
+            </p>
+            <p>
+                Under spelets gång så används musiken på några olika sätt. 
+                Eftersom den går på repeat hela tiden för att skapa en stressad 
+                stämning så kan man använda den som cue för när det händer något. 
+                T.ex. när någon har går utanför hissen för att hålla i en monolog, 
+                stäng av ljudet för att spelarna skall märka skillnaden. 
+                Annat som är effektfullt är att sänka musiken när spelarna är djupt 
+                inne i en diskussion eller aggression, för att föra över fokuset till dem. 
+                Men sedan när det är tysta partier höja volymen för att öka på den 
+                skavande känslan i en pinsam tystnad. Även gärna om någon påpekar musiken, 
+                då kan det vara roligt att öka volymen ganska mycket under en kortare stund, 
+                för att ge feedback och pusha på den känslan.
+            </p>
+            <span class="sub">Att tänka på</span>
+            <p>
+                Åka hiss är ett scenario om konflikter och problem runt dem. 
+                Det är inte tänkt att vara tokroligt. Skämt och liknande får 
+                självfallet förekomma, för vem skulle inte vilja lätta upp en 
+                lång och tryckt stämning? Men om det håller på att övergå till 
+                slapstick eller liknande så försök att vänligt men bestämt föra 
+                tillbaka spelarna. Du är regisör så du har all rätt i världen att 
+                gå in och bryta och säga till spelarna att göra om något eller 
+                gå vidare. Men det bryter flowet i spelet så använd med försiktighet.
+            </p>
+        </section>
+
+        <section class="page slide15"> 
+            <div class="arrow e"></div>        
+            <span class="head">Diskussion innan spelet</span>
+            <p>
+                Eftersom spelet handlar mycket om konflikter och att plocka fram 
+                det sämsta ur karaktärerna så är det viktigt att spelarna känner 
+                sig bekväma med det. Om inte spelarna känner varandra sedan tidigare 
+                så ta en stund efter att de har läst igenom allt, men innan spelet börjar, 
+                och be dem alla att presentera sig själva lite kort. Vad heter de, 
+                kanske hur gamla de är, deras tidigare lajverfarenheter och vad de 
+                vill ha ut av detta lajvet. För att det inte skall fastna på någon 
+                so känner sig osäker så bör du som spelledare leda med exempel och 
+                börja presentationsrundan själv.
+            </p>
+            <p>
+                Efter presentationsrundan förklara i för de samlade spelarna att :
+                <ul>
+                    <li>
+                        1. Detta bara är ett lajv så de kan gå när de vill. 
+                        Lajvet blir dock roligare ju risigare varje karaktär är så ta gärna i!
+                    <li>
+                        2. Behöver en spelare gå på toa eller ta en paus, kort eller lång, 
+                        så är det bara att gå utan för tejpen. Är en spelare utanför 
+                        tejpen så är de ur spelet. De som är innanför tejpen fortsätter 
+                        dock som att inget hänt.
+                    <li>
+                        3. Fråga varje spelare en och en vad de förväntar sig och 
+                        vad de vill ha ut av lajvet.            
+                    </li>
+                </ul>
+            </p>
+        </section>
+
+        <section class="page slide16"> 
+            <div class="arrow e"></div>        
+            <span class="head">Preamble</span>
+            <span class="sub"></span>
+            <p>
+                Varje spelare spelar kort upp en av konflikterna deras karaktär har. 
+                Se till att varje spelare gör detta så att alla kommer igång och 
+                ingen blir utanför. Tanken är att dessa scenerna skall vara korta 
+                men är de bra så gör det inget om de tar några minuter. 
+                Låt spelarna spela ut dessa scenarion i en av de uttejpade hissarna, 
+                scenen håller på så länge som alla involverade karaktärer är kvar 
+                innan för tejpen. Tänk på att tystnad kan vara bra lajv och att en 
+                tryckt tystnad kan vara fantastiskt lajv!
+            </p>
+            
+            <span class="sub">Miniscener att spela upp</span>
+            <span class="head">Olsson & Af Lilja</span>
+            <span class="sub">Bråk om löneförhöjning.</span>
+            <p>
+                Af lilja vill ha 4000 kr mer i lön, Olsson tycker att det inte är 
+                förkänt och tar ut hela veckans samlade agrresioner på Af Lilja.
+            </p>
+            <span class="head">Svensson & Nyqvist</span>
+            <span class="sub">Bråk om förhållande</span>
+            <p>
+                Svensson vill berätta för alla kolegor att de är ihop och sluta 
+                leva dubbelliv. Nyqvist tycker att det skulle bara leda till problem 
+                och vara jättejobbigt på jobbet.
+            </p>
+            <span class="head">Björk & Stein</span>
+            <span class="sub">Bråk om diskmaskinen och “Din mamma jobbar inte här” lappen.</span>
+            <p>
+                Del 1 Stein ser björk ställa kaffekoppen i vasken istället för i diskmaskinen.<br/>
+                Del 2 Björk ser Stein sätta upp en “Din mamma jobbar inte här” lapp 
+                och tar et personligt.
+            </p>
+            <span class="head">Alla</span>
+            <span class="sub">Tankar kring chefens teambuilding.</span>
+            <p>
+                Varje spelare utom chefen har en monolog i taget om vad deras karaktär 
+                tycker om chefens teambuilding. När alla de spelarna är klara så 
+                har chefen en monolog om hur det är att vara chef och varför denna 
+                har teambuildingen.
+            </p>
+            <p>
+                <strong>Läs upp stämningstexten innan monologerna:</strong><br/>
+                Denna fredag så avslutar ni en extra lång och jobbig arbetsvecka 
+                med ännu ett av chefens hatade teambuilding initiativ. 
+                Även fast ingen har vågat säga det till honom så måste väll chefen 
+                ändå fatta att alla kommer hata honom om han har ett stående 
+                obligatoriskt möte på obetald övertid en fredag kväll?
+            </p>
+        </section>
+
+        <section class="page slide17"> 
+            <div class="arrow e"></div>        
+            <span class="head">Scener</span>
+            <p>
+                <span class="sub">Scen E</span>
+                Presentera scenen:</strong> Ni är på väg hem från jobbet en fredagkväll 
+                efter en onödigt lång arbetsdag. Hissen fastnar på vägen ner. 
+                Ni får inte upp dörrarna, nödknappen fungerar inte och ni har inte 
+                mobiltäckning i hisschaktet.
+            </p>
+            <p>
+                <span class="sub">Scen 2</span>
+                Presentera scenen:</strong> Ni vaknar upp någon gång på lördagen 
+                och är fortfarande kvar i hissen. En jobbigt lång och pinsam tystnad 
+                lägger sig över hissen. Ni får inte prata förens timern har ringt.
+            </p>
+            <p>
+                <span class="sub">Scen 3</span>
+                Presentera scenen:</strong> Nu är det söndag och det finns risk att 
+                ni kan vara kvar i hissen ända till på måndag. Nu har ni varit i 
+                denna jobbiga situationen en väldigt lång tid tillsammans med folk 
+                som ni inte gillar, men kanske är det så att dom är bara människor dom med?
+            </p>
+            <p>
+                <span class="sub">Slut</span>
+                När det känns som att spelarna är klara, eller när tiden gått ut 
+                så säg högt något i stil med  “Ni somnar helt utmattade tillslut 
+                på söndagen. På måndag morgon kommer städarna och förvånat frågar
+                ‘Men vad gör ni här?” 
+            </p>
+            <span class="head">Slut.</span>    
+        </section>
+
+        <section class="page slide18"> 
+            <div class="arrow e"></div>        
+            <span class="head">Efterdiskusion</span>
+            <p>
+                Ta lite tid och samla spelarna efter lajvet och få dem att prata ut om deras upplevelser. 
+                Du kan börja med att fråga och låt svaren gå laget runt:
+                <ul>
+                    <li>
+                        1. Hur tror ni att det skulle vara på jobbet nästa arbetsdag?
+                    </li>
+                    <li>
+                        2. Längre fram i tiden?
+                    </li>
+                    <li>
+                        3. Tror du att din karaktär har förändrats något efter händelsen?
+                    </li>
+                    <li>
+                        4. Skulle du som spelare jobba kvar efter händelsen?
+                    </li>
+                    <li>
+                        5. Låt sedan spelarna själva styra samtalet.
+                    </li>
+                </ul>
+            </p>
+        </section>
+
+        <section class="page slide19"> 
+            <div class="arrow nw"></div>        
+            <span class="head">Extras</span>
+            <span class="sub">Musikspelare</span>
+            <span class="sub">Stoppur</span>
+            <span class="sub">Feedback</span>
+        </section>
     </div>
 
     <footer></footer>
